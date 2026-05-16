@@ -51,10 +51,17 @@ function buildPersonalMd(data: {
   ].join("\n");
 }
 
+export interface OnboardingData {
+  website: string;
+  description: string;
+  audience: string;
+  tiktok: string;
+}
+
 export default function OnboardingFlow({
   onComplete,
 }: {
-  onComplete: () => void;
+  onComplete: (data: OnboardingData) => void;
 }) {
   const [step, setStep] = useState<Step>("welcome");
   const [website, setWebsite] = useState("");
@@ -400,7 +407,7 @@ export default function OnboardingFlow({
                   className="mt-10 flex items-center gap-3"
                 >
                   <button
-                    onClick={onComplete}
+                    onClick={() => onComplete({ website, description, audience, tiktok })}
                     className="inline-flex items-center gap-2 bg-accent hover:bg-accent-hover text-white px-6 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer"
                   >
                     View Strategy

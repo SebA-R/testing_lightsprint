@@ -57,6 +57,12 @@ body {
   color: var(--accent);
 }
 
+.glass-panel {
+  background: rgba(17, 17, 19, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
 ::-webkit-scrollbar {
   width: 4px;
 }
