@@ -1,22 +1,26 @@
 "use client";
 
-import { useState } from "react";
-import Sidebar, { type View } from "@/components/Sidebar";
-import NicheSetup from "@/components/NicheSetup";
-import ContentStudio from "@/components/ContentStudio";
-import PerformanceLoop from "@/components/PerformanceLoop";
+import { useState, useEffect } from "react";
+import Lenis from "lenis";
+import OnboardingFlow from "@/components/OnboardingFlow";
+import Dashboard from "@/components/Dashboard";
 
 export default function Home() {
-  const [view, setView] = useState<View>("niche");
+  const [phase, setPhase] = useState<"onboarding" | "dashboard">("onboarding");
 
-  return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar active={view} onNavigate={setView} />
-      <main className="flex-1 overflow-y-auto p-8">
-        {view === "niche" && <NicheSetup />}
-        {view === "studio" && <ContentStudio />}
-        {view === "performance" && <PerformanceLoop />}
-      </main>
-    </div>
-  );
+  useEffect(() => {
+    const lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
+    function raf(time: number) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+    return () => lenis.destroy();
+  }, []);
+
+  if (phase === "onboarding") {
+    return <OnboardingFlow onComplete={() => setPhase("dashboard")} />;
+  }
+
+  return <Dashboard />;
 }

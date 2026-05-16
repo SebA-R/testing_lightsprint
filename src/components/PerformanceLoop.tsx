@@ -1,142 +1,114 @@
 "use client";
 
+import { motion } from "motion/react";
+
 const POSTS = [
-  {
-    date: "2026-05-14",
-    niche: "Personal Finance",
-    hook: "Stop Saving Money",
-    predicted: 85,
-    actual: 124000,
-    delta: 46,
-  },
-  {
-    date: "2026-05-11",
-    niche: "Personal Finance",
-    hook: "The 50/30/20 Rule Is Dead",
-    predicted: 78,
-    actual: 89000,
-    delta: 14,
-  },
-  {
-    date: "2026-05-08",
-    niche: "Fitness",
-    hook: "Why Your Gym Routine Fails",
-    predicted: 72,
-    actual: 41000,
-    delta: -34,
-  },
-  {
-    date: "2026-05-05",
-    niche: "Personal Finance",
-    hook: "I Paid Off $40K in 6 Months",
-    predicted: 90,
-    actual: 210000,
-    delta: 133,
-  },
-  {
-    date: "2026-05-02",
-    niche: "Fitness",
-    hook: "3 Exercises You're Doing Wrong",
-    predicted: 68,
-    actual: 52000,
-    delta: -12,
-  },
+  { date: "May 14", niche: "Finance", hook: "Stop Saving Money", predicted: 85, actual: 124000, delta: 46 },
+  { date: "May 11", niche: "Finance", hook: "The 50/30/20 Rule Is Dead", predicted: 78, actual: 89000, delta: 14 },
+  { date: "May 8", niche: "Fitness", hook: "Why Your Gym Routine Fails", predicted: 72, actual: 41000, delta: -34 },
+  { date: "May 5", niche: "Finance", hook: "I Paid Off $40K in 6 Months", predicted: 90, actual: 210000, delta: 133 },
+  { date: "May 2", niche: "Fitness", hook: "3 Exercises You're Doing Wrong", predicted: 68, actual: 52000, delta: -12 },
 ];
 
 function formatViews(n: number): string {
-  if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
-  if (n >= 1000) return `${(n / 1000).toFixed(0)}K`;
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K`;
   return String(n);
 }
 
 export default function PerformanceLoop() {
   return (
     <div>
-      <h1 className="text-xl font-semibold mb-1">Performance Loop</h1>
-      <p className="text-sm text-muted mb-8">
-        Track post performance and see what GBrain learned.
-      </p>
-
-      <div className="bg-card-bg border border-card-border rounded-md overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-card-border text-left text-xs text-muted uppercase tracking-wider">
-                <th className="px-4 py-3 font-medium">Date</th>
-                <th className="px-4 py-3 font-medium">Niche</th>
-                <th className="px-4 py-3 font-medium">Hook Used</th>
-                <th className="px-4 py-3 font-medium text-right">Predicted</th>
-                <th className="px-4 py-3 font-medium text-right">Actual Views</th>
-                <th className="px-4 py-3 font-medium text-right">Delta</th>
-              </tr>
-            </thead>
-            <tbody>
-              {POSTS.map((post, i) => (
-                <tr
-                  key={i}
-                  className="border-b border-card-border last:border-0 hover:bg-white/[0.02] transition-colors"
-                >
-                  <td className="px-4 py-3 font-mono text-muted">{post.date}</td>
-                  <td className="px-4 py-3">{post.niche}</td>
-                  <td className="px-4 py-3 font-medium">{post.hook}</td>
-                  <td className="px-4 py-3 text-right font-mono">{post.predicted}</td>
-                  <td className="px-4 py-3 text-right font-mono">
-                    {formatViews(post.actual)}
-                  </td>
-                  <td className="px-4 py-3 text-right font-mono font-medium">
-                    <span
-                      className={
-                        post.delta >= 0 ? "text-success" : "text-danger"
-                      }
-                    >
-                      {post.delta >= 0 ? "+" : ""}
-                      {post.delta}%
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <div className="mb-10">
+        <h1 className="text-2xl font-semibold tracking-tight">Performance</h1>
+        <p className="text-sm text-muted mt-1">
+          Track results and see what the AI learned.
+        </p>
       </div>
 
-      <div className="mt-6 bg-card-bg border border-card-border rounded-md overflow-hidden">
-        <div className="border-l-2 border-accent p-4">
-          <p className="text-xs text-muted uppercase tracking-wider mb-3 font-medium">
-            GBrain Learning Update
-          </p>
-          <div className="font-mono text-sm text-foreground/80 space-y-2">
+      <section className="mb-12">
+        <h2 className="text-xs text-muted uppercase tracking-widest mb-5 font-medium">
+          Recent Posts
+        </h2>
+        <div className="space-y-2">
+          {POSTS.map((post, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.35,
+                delay: i * 0.05,
+                ease: [0.16, 1, 0.3, 1],
+              }}
+              className="flex items-center gap-4 bg-card-bg border border-card-border rounded-xl px-5 py-4 group hover:border-card-border/80 transition-colors"
+            >
+              <span className="text-xs text-muted font-mono w-14 shrink-0">
+                {post.date}
+              </span>
+              <span className="text-[10px] text-muted/60 uppercase tracking-widest w-16 shrink-0">
+                {post.niche}
+              </span>
+              <span className="text-sm font-medium flex-1 truncate">
+                {post.hook}
+              </span>
+              <span className="text-xs text-muted font-mono">
+                {post.predicted}
+              </span>
+              <span className="text-sm font-mono w-16 text-right">
+                {formatViews(post.actual)}
+              </span>
+              <span
+                className={`text-xs font-mono font-medium w-14 text-right ${
+                  post.delta >= 0 ? "text-success" : "text-danger"
+                }`}
+              >
+                {post.delta >= 0 ? "+" : ""}
+                {post.delta}%
+              </span>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-xs text-muted uppercase tracking-widest mb-5 font-medium">
+          AI Learning
+        </h2>
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.25 }}
+          className="bg-card-bg border border-card-border rounded-xl p-6"
+        >
+          <div className="space-y-3 text-sm text-foreground/70 leading-relaxed">
             <p>
-              <span className="text-accent">→</span> Based on post from 2026-05-08,
-              hook type{" "}
-              <span className="text-foreground font-medium">
-                &quot;contrarian opener&quot;
-              </span>{" "}
-              underperformed by{" "}
-              <span className="text-danger font-medium">34%</span> in{" "}
-              <span className="text-foreground font-medium">fitness</span> niche.
+              <span className="text-accent mr-2">→</span>
+              Contrarian openers underperformed by{" "}
+              <span className="text-danger font-medium">34%</span> in fitness.
+              Deprioritizing for that niche.
             </p>
             <p>
-              <span className="text-accent">→</span> Strategy page updated:
-              deprioritizing contrarian hooks for fitness. Switching to{" "}
+              <span className="text-accent mr-2">→</span>
+              Switching to{" "}
               <span className="text-foreground font-medium">
                 &quot;relatable mistake&quot;
               </span>{" "}
-              pattern which showed{" "}
-              <span className="text-success font-medium">+22%</span> engagement in
-              similar niches.
+              pattern — showed{" "}
+              <span className="text-success font-medium">+22%</span> in similar
+              niches.
             </p>
             <p>
-              <span className="text-accent">→</span> Confidence model recalibrated.
+              <span className="text-accent mr-2">→</span>
               Next prediction accuracy target:{" "}
               <span className="text-foreground font-medium">±15%</span>.
             </p>
           </div>
-          <p className="text-xs text-muted mt-3 font-mono">
-            Updated at 2026-05-16T14:32:00Z
+          <p className="text-[10px] text-muted/50 mt-5 font-mono">
+            Updated May 16, 2026
           </p>
-        </div>
-      </div>
+        </motion.div>
+      </section>
     </div>
   );
 }
