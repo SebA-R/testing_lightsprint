@@ -3,10 +3,17 @@
 import { useState, useEffect } from "react";
 import Lenis from "lenis";
 import OnboardingFlow from "@/components/OnboardingFlow";
+import type { OnboardingData } from "@/components/OnboardingFlow";
 import Dashboard from "@/components/Dashboard";
 
 export default function Home() {
   const [phase, setPhase] = useState<"onboarding" | "dashboard">("onboarding");
+  const [onboardingData, setOnboardingData] = useState<OnboardingData>({
+    website: "",
+    description: "",
+    audience: "",
+    tiktok: "",
+  });
 
   useEffect(() => {
     const lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
@@ -19,8 +26,15 @@ export default function Home() {
   }, []);
 
   if (phase === "onboarding") {
-    return <OnboardingFlow onComplete={() => setPhase("dashboard")} />;
+    return (
+      <OnboardingFlow
+        onComplete={(data) => {
+          setOnboardingData(data);
+          setPhase("dashboard");
+        }}
+      />
+    );
   }
 
-  return <Dashboard />;
+  return <Dashboard onboardingData={onboardingData} />;
 }
