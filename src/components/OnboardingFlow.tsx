@@ -8,10 +8,8 @@ const STEP_ORDER = [
   "welcome",
   "website",
   "description",
-  "niche",
   "audience",
   "tiktok",
-  "competitors",
   "scanning",
 ] as const;
 
@@ -20,14 +18,13 @@ type Step = (typeof STEP_ORDER)[number];
 const AGENT_STEPS = [
   "Initializing agent pipeline…",
   "Crawling product website…",
+  "Analyzing brand positioning…",
   "Fetching trending videos via Apify…",
-  "Analyzing top 50 videos in niche…",
   "Extracting hook patterns from high-performers…",
   "Identifying slide structure templates…",
   "Scoring CTA effectiveness across samples…",
-  "Cross-referencing competitor content strategies…",
   "Analyzing reference TikTok content…",
-  "Building niche performance model…",
+  "Building audience engagement model…",
   "Writing strategy context to GBrain memory…",
   "Generating personal.md profile…",
   "Selecting optimal carousel template…",
@@ -37,12 +34,9 @@ const AGENT_STEPS = [
 function buildPersonalMd(data: {
   website: string;
   description: string;
-  niche: string;
   audience: string;
   tiktok: string;
-  competitors: string[];
 }) {
-  const comps = data.competitors.filter(Boolean);
   return [
     `# Personal Profile`,
     ``,
@@ -51,12 +45,8 @@ function buildPersonalMd(data: {
     `- **Description:** ${data.description}`,
     ``,
     `## Content Strategy`,
-    `- **Niche:** ${data.niche}`,
     `- **Target Audience:** ${data.audience}`,
     `- **Reference TikTok:** ${data.tiktok}`,
-    ...(comps.length
-      ? [``, `## Competitors`, ...comps.map((c) => `- ${c}`)]
-      : []),
     ``,
   ].join("\n");
 }
@@ -69,10 +59,8 @@ export default function OnboardingFlow({
   const [step, setStep] = useState<Step>("welcome");
   const [website, setWebsite] = useState("");
   const [description, setDescription] = useState("");
-  const [niche, setNiche] = useState("");
   const [audience, setAudience] = useState("");
   const [tiktok, setTiktok] = useState("");
-  const [competitors, setCompetitors] = useState(["", "", ""]);
   const [logLines, setLogLines] = useState<string[]>([]);
   const [currentTyping, setCurrentTyping] = useState("");
   const [scanDone, setScanDone] = useState(false);
@@ -116,14 +104,7 @@ export default function OnboardingFlow({
     setLogLines([]);
     setCurrentTyping("");
 
-    const md = buildPersonalMd({
-      website,
-      description,
-      niche,
-      audience,
-      tiktok,
-      competitors,
-    });
+    const md = buildPersonalMd({ website, description, audience, tiktok });
     setPersonalMd(md);
 
     for (const line of AGENT_STEPS) {
@@ -132,7 +113,7 @@ export default function OnboardingFlow({
     }
 
     setScanDone(true);
-  }, [typewriterLine, website, description, niche, audience, tiktok, competitors]);
+  }, [typewriterLine, website, description, audience, tiktok]);
 
   const downloadPersonalMd = () => {
     const blob = new Blob([personalMd], { type: "text/markdown" });
@@ -200,7 +181,7 @@ export default function OnboardingFlow({
               </h1>
               <p className="text-muted text-base mb-10 leading-relaxed">
                 Answer a few quick questions and our AI agent will analyze your
-                niche, competitors, and build an optimized content plan.
+                product and build an optimized content plan.
               </p>
               <button
                 onClick={() => goNext("welcome")}
@@ -275,36 +256,6 @@ export default function OnboardingFlow({
             </motion.div>
           )}
 
-          {step === "niche" && (
-            <motion.div key="niche" {...motionProps} className="w-full max-w-lg">
-              <p className="text-sm text-muted mb-2 font-mono">
-                {String(inputStepNum).padStart(2, "0")}
-              </p>
-              <h2 className="text-2xl font-semibold tracking-tight mb-2">
-                What&apos;s your TikTok niche?
-              </h2>
-              <p className="text-muted text-sm mb-8">
-                The content category you want to dominate.
-              </p>
-              <input
-                ref={inputRef}
-                type="text"
-                placeholder="e.g. personal finance, fitness, skincare"
-                value={niche}
-                onChange={(e) => setNiche(e.target.value)}
-                onKeyDown={(e) =>
-                  handleKeyDown(e, () => niche.trim() && goNext("niche"))
-                }
-                className="w-full bg-transparent border-b border-card-border py-3 text-lg text-foreground placeholder:text-muted/40 focus:outline-none focus:border-accent transition-colors"
-              />
-              <StepNav
-                onBack={() => goBack("niche")}
-                onNext={() => niche.trim() && goNext("niche")}
-                nextDisabled={!niche.trim()}
-              />
-            </motion.div>
-          )}
-
           {step === "audience" && (
             <motion.div key="audience" {...motionProps} className="w-full max-w-lg">
               <p className="text-sm text-muted mb-2 font-mono">
@@ -353,62 +304,23 @@ export default function OnboardingFlow({
                 value={tiktok}
                 onChange={(e) => setTiktok(e.target.value)}
                 onKeyDown={(e) =>
-                  handleKeyDown(e, () => tiktok.trim() && goNext("tiktok"))
+                  handleKeyDown(e, () => tiktok.trim() && runScan())
                 }
                 className="w-full bg-transparent border-b border-card-border py-3 text-lg text-foreground placeholder:text-muted/40 focus:outline-none focus:border-accent transition-colors"
               />
-              <StepNav
-                onBack={() => goBack("tiktok")}
-                onNext={() => tiktok.trim() && goNext("tiktok")}
-                nextDisabled={!tiktok.trim()}
-              />
-            </motion.div>
-          )}
-
-          {step === "competitors" && (
-            <motion.div key="competitors" {...motionProps} className="w-full max-w-lg">
-              <p className="text-sm text-muted mb-2 font-mono">
-                {String(inputStepNum).padStart(2, "0")}
-              </p>
-              <h2 className="text-2xl font-semibold tracking-tight mb-2">
-                Any competitors to watch?
-              </h2>
-              <p className="text-muted text-sm mb-8">
-                Add up to 3 TikTok handles. Optional — skip if unsure.
-              </p>
-              <div className="space-y-4">
-                {competitors.map((val, i) => (
-                  <input
-                    key={i}
-                    ref={i === 0 ? inputRef : undefined}
-                    type="text"
-                    placeholder={`@handle${i + 1}`}
-                    value={val}
-                    onChange={(e) => {
-                      const next = [...competitors];
-                      next[i] = e.target.value;
-                      setCompetitors(next);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && i === competitors.length - 1)
-                        runScan();
-                    }}
-                    className="w-full bg-transparent border-b border-card-border py-3 text-lg text-foreground placeholder:text-muted/40 focus:outline-none focus:border-accent transition-colors"
-                  />
-                ))}
-              </div>
               <div className="flex items-center justify-between mt-8">
                 <button
-                  onClick={() => goBack("competitors")}
+                  onClick={() => goBack("tiktok")}
                   className="text-sm text-muted hover:text-foreground transition-colors cursor-pointer"
                 >
                   Back
                 </button>
                 <button
-                  onClick={runScan}
-                  className="inline-flex items-center gap-2 bg-accent hover:bg-accent-hover text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer"
+                  onClick={() => tiktok.trim() && runScan()}
+                  disabled={!tiktok.trim()}
+                  className="inline-flex items-center gap-2 bg-accent hover:bg-accent-hover disabled:opacity-30 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer disabled:cursor-not-allowed"
                 >
-                  Scan Niche
+                  Analyze
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -428,7 +340,7 @@ export default function OnboardingFlow({
                   <Loader2 className="w-4 h-4 text-accent animate-spin" />
                 )}
                 <h2 className="text-xl font-semibold tracking-tight">
-                  {scanDone ? "Strategy ready" : "Analyzing your niche…"}
+                  {scanDone ? "Strategy ready" : "Analyzing your product…"}
                 </h2>
               </div>
 
